@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "167936159847",
+    "project_id": "bovi-control",
+    "storage_bucket": "bovi-control.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167936159847:android:bbabc69e541393c16864c2",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZjLxNfYpJmxHqxb1NOFK4MB1d2xKLzso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
