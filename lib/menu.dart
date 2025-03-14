@@ -3,18 +3,21 @@ import 'perfil.dart';
 import 'EventosTareasPage.dart';
 import 'TusVacas.dart';
 import 'TusFincas.dart';
+import 'Notificaciones.dart';
+import 'SoportePage.dart'; // Nueva página de Contacto/Soporte
 
 class MenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Menu'),
+        title: Text('Menú'),
+        backgroundColor: Colors.green,
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.more_vert),
             onPressed: () {
-              // Acciones para el menú desplegable
+              // Acciones futuras para el menú desplegable
             },
           ),
         ],
@@ -23,6 +26,7 @@ class MenuPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: <Widget>[
+            // Campo de búsqueda
             TextField(
               decoration: InputDecoration(
                 labelText: "Buscar",
@@ -34,88 +38,75 @@ class MenuPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PerfilPage()),
-                  );
-                },
-                icon: Icon(Icons.person),
-                label: Text("Perfil"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
+
+            // Botón Perfil
+            _buildMenuButton(
+              context,
+              icon: Icons.person,
+              text: "Perfil",
+              page: PerfilPage(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EventosTareasPage()),
-                  );
-                },
-                icon: Icon(Icons.event),
-                label: Text("Eventos y Tareas"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
+
+            // Botón Eventos y Tareas
+            _buildMenuButton(
+              context,
+              icon: Icons.event,
+              text: "Eventos y Tareas",
+              page: EventosTareasPage(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TusVacasPage()),
-                  );
-                },
-                icon: Icon(Icons.pets),
-                label: Text("Tus Vacas"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
+
+            // Botón Tus Vacas
+            _buildMenuButton(
+              context,
+              icon: Icons.pets,
+              text: "Tus Vacas",
+              page: TusVacasPage(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TusFincasPage()),
-                  );
-                },
-                icon: Icon(Icons.landscape),
-                label: Text("Tus Fincas"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
+
+            // Botón Tus Fincas
+            _buildMenuButton(
+              context,
+              icon: Icons.landscape,
+              text: "Tus Fincas",
+              page: TusFincasPage(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.notifications),
-                label: Text("Notificaciones"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
+
+            // Botón Notificaciones
+            _buildMenuButton(
+              context,
+              icon: Icons.notifications,
+              text: "Notificaciones",
+              page: NotificacionesPage(),
+            ),
+
+            // Botón Contacto/Soporte (Nuevo)
+            _buildMenuButton(
+              context,
+              icon: Icons.support_agent,
+              text: "Contacto/Soporte",
+              page: SoportePage(),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Función para crear botones con un solo código reutilizable
+  Widget _buildMenuButton(BuildContext context,
+      {required IconData icon, required String text, required Widget page}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => page));
+        },
+        icon: Icon(icon),
+        label: Text(text),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          minimumSize: Size(double.infinity, 50),
         ),
       ),
     );

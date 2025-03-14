@@ -4,6 +4,7 @@ import 'registro.dart';
 // Importaciones de Firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Importar Firestore
 
 void main() async {
   // Asegurarse de que los bindings de Flutter estén inicializados
@@ -12,6 +13,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Habilitar Firestore en modo offline
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true, // Activa el almacenamiento en caché
+    cacheSizeBytes: Settings
+        .CACHE_SIZE_UNLIMITED, // (Opcional) Usa almacenamiento ilimitado
+  );
+
   // Ejecutar la aplicación
   runApp(const MyApp());
 }
@@ -66,7 +75,7 @@ class MyApp extends StatelessWidget {
                           MaterialPageRoute(builder: (context) => MenuPage()),
                         );
                         final snackBar = SnackBar(
-                            content: Text('Sessión Iniciada Correctamente'));
+                            content: Text('Sesión Iniciada Correctamente'));
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       },
                       child: Text('Iniciar Sesión'),
