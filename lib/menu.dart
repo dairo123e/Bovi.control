@@ -4,87 +4,50 @@ import 'EventosTareasPage.dart';
 import 'TusVacas.dart';
 import 'TusFincas.dart';
 import 'Notificaciones.dart';
-import 'SoportePage.dart'; // Nueva página de Contacto/Soporte
+import 'SoportePage.dart';
 
 class MenuPage extends StatelessWidget {
+  final List<_MenuOption> menuOptions = [
+    _MenuOption("Perfil", Icons.person, Colors.blue, PerfilPage()),
+    _MenuOption(
+        "Eventos y Tareas", Icons.event, Colors.orange, EventosTareasPage()),
+    _MenuOption("Tus Vacas", Icons.pets, Colors.brown, TusVacasPage()),
+    _MenuOption("Tus Fincas", Icons.landscape, Colors.teal, TusFincasPage()),
+    _MenuOption("Notificaciones", Icons.notifications, Colors.red,
+        NotificacionesPage()),
+    _MenuOption("Soporte", Icons.support_agent, Colors.purple, SoportePage()),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Menú'),
+        title: const Text('Menú Principal'),
         backgroundColor: Colors.green,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {
-              // Acciones futuras para el menú desplegable
-            },
-          ),
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          children: <Widget>[
-            // Campo de búsqueda
+          children: [
+            const SizedBox(height: 10),
             TextField(
               decoration: InputDecoration(
-                labelText: "Buscar",
-                hintText: "Buscar",
+                labelText: "Buscar en el menú...",
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                ),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
               ),
             ),
-            SizedBox(height: 10),
-
-            // Botón Perfil
-            _buildMenuButton(
-              context,
-              icon: Icons.person,
-              text: "Perfil",
-              page: PerfilPage(),
-            ),
-
-            // Botón Eventos y Tareas
-            _buildMenuButton(
-              context,
-              icon: Icons.event,
-              text: "Eventos y Tareas",
-              page: EventosTareasPage(),
-            ),
-
-            // Botón Tus Vacas
-            _buildMenuButton(
-              context,
-              icon: Icons.pets,
-              text: "Tus Vacas",
-              page: TusVacasPage(),
-            ),
-
-            // Botón Tus Fincas
-            _buildMenuButton(
-              context,
-              icon: Icons.landscape,
-              text: "Tus Fincas",
-              page: TusFincasPage(),
-            ),
-
-            // Botón Notificaciones
-            _buildMenuButton(
-              context,
-              icon: Icons.notifications,
-              text: "Notificaciones",
-              page: NotificacionesPage(),
-            ),
-
-            // Botón Contacto/Soporte (Nuevo)
-            _buildMenuButton(
-              context,
-              icon: Icons.support_agent,
-              text: "Contacto/Soporte",
-              page: SoportePage(),
+            const SizedBox(height: 20),
+            GridView.count(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
+              children: menuOptions
+                  .map((option) => _buildCard(context, option))
+                  .toList(),
             ),
           ],
         ),
@@ -92,23 +55,49 @@ class MenuPage extends StatelessWidget {
     );
   }
 
-  // Función para crear botones con un solo código reutilizable
-  Widget _buildMenuButton(BuildContext context,
-      {required IconData icon, required String text, required Widget page}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => page));
-        },
-        icon: Icon(icon),
-        label: Text(text),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          minimumSize: Size(double.infinity, 50),
+  Widget _buildCard(BuildContext context, _MenuOption option) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => option.page));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.green[100], // Verde claro de fondo
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.2),
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(option.icon, size: 50, color: option.color),
+            const SizedBox(height: 10),
+            Text(
+              option.title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.green[900],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _MenuOption {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final Widget page;
+
+  _MenuOption(this.title, this.icon, this.color, this.page);
 }

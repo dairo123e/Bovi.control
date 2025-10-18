@@ -19,6 +19,14 @@ class _TusVacasPageState extends State<TusVacasPage> {
   String? _vacunas;
   File? _image;
 
+  final TextEditingController _fechaController = TextEditingController();
+
+  @override
+  void dispose() {
+    _fechaController.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -43,6 +51,10 @@ class _TusVacasPageState extends State<TusVacasPage> {
           'vacunas': _vacunas,
           'image': _image,
         });
+
+        _fechaNacimiento = null;
+        _fechaController.clear();
+        _image = null;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,8 +62,20 @@ class _TusVacasPageState extends State<TusVacasPage> {
       );
 
       _formKey.currentState?.reset();
-      _image = null;
     }
+  }
+
+  InputDecoration _buildInputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.green[700]),
+      filled: true,
+      fillColor: Colors.green[50],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    );
   }
 
   @override
@@ -59,202 +83,224 @@ class _TusVacasPageState extends State<TusVacasPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Tus Vacas'),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green[700],
+        elevation: 5,
+        shadowColor: Colors.greenAccent,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Registrar Nueva Vaca',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Nombre',
-                        border: OutlineInputBorder(),
-                      ),
-                      onSaved: (value) {
-                        _nombre = value;
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese un nombre';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Raza',
-                        border: OutlineInputBorder(),
-                      ),
-                      onSaved: (value) {
-                        _raza = value;
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese la raza';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Fecha de Nacimiento',
-                        border: OutlineInputBorder(),
-                      ),
-                      onTap: () async {
-                        FocusScope.of(context).requestFocus(FocusNode());
-                        final pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                        );
-                        if (pickedDate != null) {
-                          setState(() {
-                            _fechaNacimiento = pickedDate;
-                          });
-                        }
-                      },
-                      readOnly: true,
-                      validator: (value) {
-                        if (_fechaNacimiento == null) {
-                          return 'Por favor seleccione una fecha';
-                        }
-                        return null;
-                      },
-                      controller: TextEditingController(
-                        text: _fechaNacimiento != null
-                            ? "${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}"
-                            : '',
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Cantidad de Partos',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onSaved: (value) {
-                        _cantidadPartos = int.tryParse(value!);
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese la cantidad de partos';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Promedio de Producción',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onSaved: (value) {
-                        _promedioProduccion = double.tryParse(value!);
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese el promedio de producción';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Vacunas',
-                        border: OutlineInputBorder(),
-                      ),
-                      onSaved: (value) {
-                        _vacunas = value;
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese el registro de vacunas';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    _image != null
-                        ? Image.file(_image!, height: 150)
-                        : Text('No se ha seleccionado ninguna imagen'),
-                    SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: _pickImage,
-                      icon: Icon(Icons.image),
-                      label: Text('Seleccionar Imagen'),
-                    ),
-                    SizedBox(height: 16),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: _saveVaca,
-                        child: Text('Registrar Vaca'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 15,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Registrar Nueva Vaca',
+                    style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[800]),
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    decoration: _buildInputDecoration('Nombre', Icons.pets),
+                    onSaved: (value) => _nombre = value,
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Ingrese un nombre'
+                        : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    decoration: _buildInputDecoration('Raza', Icons.list_alt),
+                    onSaved: (value) => _raza = value,
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Ingrese la raza'
+                        : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: _fechaController,
+                    readOnly: true,
+                    decoration: _buildInputDecoration(
+                        'Fecha de Nacimiento', Icons.calendar_today),
+                    onTap: () async {
+                      FocusScope.of(context).requestFocus(FocusNode());
+                      final pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                        builder: (context, child) => Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: Colors.green[700]!,
+                              onPrimary: Colors.white,
+                              onSurface: Colors.green[700]!,
+                            ),
+                            textButtonTheme: TextButtonThemeData(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.green[700],
+                              ),
+                            ),
                           ),
-                          textStyle: TextStyle(fontSize: 16.0),
+                          child: child!,
                         ),
+                      );
+                      if (pickedDate != null) {
+                        setState(() {
+                          _fechaNacimiento = pickedDate;
+                          _fechaController.text =
+                              "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                        });
+                      }
+                    },
+                    validator: (value) => (_fechaNacimiento == null)
+                        ? 'Seleccione una fecha'
+                        : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    decoration: _buildInputDecoration(
+                        'Cantidad de Partos', Icons.numbers),
+                    keyboardType: TextInputType.number,
+                    onSaved: (value) =>
+                        _cantidadPartos = int.tryParse(value ?? '0'),
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Ingrese cantidad'
+                        : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    decoration: _buildInputDecoration(
+                        'Promedio de Producción', Icons.local_drink),
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
+                    onSaved: (value) =>
+                        _promedioProduccion = double.tryParse(value ?? '0'),
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Ingrese promedio'
+                        : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    decoration: _buildInputDecoration(
+                        'Vacunas', Icons.medical_services),
+                    onSaved: (value) => _vacunas = value,
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Ingrese vacunas'
+                        : null,
+                  ),
+                  SizedBox(height: 20),
+                  _image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.file(_image!,
+                              height: 150, width: 150, fit: BoxFit.cover),
+                        )
+                      : Text(
+                          'No se ha seleccionado ninguna imagen',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                  SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    icon: Icon(Icons.image),
+                    label: Text('Seleccionar Imagen'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[700],
+                      padding:
+                          EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _saveVaca,
+                      child: Text('Registrar Vaca',
+                          style: TextStyle(fontSize: 18)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[800],
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 60, vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 6,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: 30),
+                ],
               ),
-              SizedBox(height: 20),
-              Text(
-                'Vacas Registradas',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 16),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _vacas.length,
-                itemBuilder: (context, index) {
-                  final vaca = _vacas[index];
-                  return Card(
-                    child: ListTile(
-                      leading: vaca['image'] != null
-                          ? Image.file(vaca['image'], width: 50, height: 50)
-                          : Icon(Icons.pets),
-                      title: Text(vaca['nombre']),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Raza: ${vaca['raza']}'),
-                          Text(
-                              'Fecha de Nacimiento: ${vaca['fechaNacimiento']?.day}/${vaca['fechaNacimiento']?.month}/${vaca['fechaNacimiento']?.year}'),
-                          Text('Cantidad de Partos: ${vaca['cantidadPartos']}'),
-                          Text(
-                              'Promedio de Producción: ${vaca['promedioProduccion']} litros'),
-                          Text('Vacunas: ${vaca['vacunas']}'),
-                        ],
-                      ),
+            ),
+            Divider(color: Colors.green[300], thickness: 2),
+            SizedBox(height: 10),
+            Text(
+              'Vacas Registradas',
+              style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800]),
+            ),
+            SizedBox(height: 16),
+            _vacas.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      'No hay vacas registradas aún.',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: _vacas.length,
+                    itemBuilder: (context, index) {
+                      final vaca = _vacas[index];
+                      return Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        margin:
+                            EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 16),
+                          leading: vaca['image'] != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Image.file(vaca['image'],
+                                      width: 60, height: 60, fit: BoxFit.cover),
+                                )
+                              : CircleAvatar(
+                                  backgroundColor: Colors.green[200],
+                                  child: Icon(Icons.pets,
+                                      color: Colors.green[700]),
+                                  radius: 30,
+                                ),
+                          title: Text(vaca['nombre'] ?? '',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Raza: ${vaca['raza']}"),
+                              Text(
+                                  "Fecha Nac: ${vaca['fechaNacimiento']?.day}/${vaca['fechaNacimiento']?.month}/${vaca['fechaNacimiento']?.year}"),
+                              Text("Partos: ${vaca['cantidadPartos']}"),
+                              Text("Promedio: ${vaca['promedioProduccion']} L"),
+                              Text("Vacunas: ${vaca['vacunas']}"),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ],
         ),
       ),
     );
