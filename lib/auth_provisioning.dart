@@ -8,25 +8,26 @@ class Provisioning {
   Provisioning(this._auth, this._db);
 
   /// Crea /tenants/{tenantId}/users/{uid} si no existe.
-  /// No consulta otros usuarios (evita permission-denied con reglas actuales).
-  /// Usa 'admin' como rol por defecto para el dueño (ajústalo si deseas 'worker').
+  /// Evita lecturas previas para que funcione con reglas estrictas.
+  /// Usa 'ganadero' como rol por defecto para mantener consistencia del dominio.
   Future<void> ensureUserProvisioned(String tenantId,
-      {String defaultRole = 'admin'}) async {
+      {String? defaultRole}) async {
     final user = _auth.currentUser!;
     final uid = user.uid;
     final userRef = _db.doc('tenants/$tenantId/users/$uid');
 
-    await _db.runTransaction((tx) async {
-      final me = await tx.get(userRef);
-      if (me.exists) return;
+    final payload = <String, dynamic>{
+      'displayName': user.displayName ?? '',
+      'email': user.email ?? '',
+      'status': 'active',
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
 
-      tx.set(userRef, {
-        'displayName': user.displayName ?? '',
-        'email': user.email ?? '',
-        'role': defaultRole, // <— para ti pon 'admin'
-        'status': 'active',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    });
+    if (defaultRole != null) {
+      payload['role'] = defaultRole;
+      payload['createdAt'] = FieldValue.serverTimestamp();
+    }
+
+    await userRef.set(payload, SetOptions(merge: true));
   }
 }

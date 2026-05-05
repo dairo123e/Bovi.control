@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me(tenantId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid));
+    }
+
+    function isMember(tenantId) {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid));
+    }
+
+    function isActiveMember(tenantId) {
+      return isMember(tenantId) && me(tenantId).data.status == 'active';
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isGanadero(tenantId) {
+      return isActiveMember(tenantId) && me(tenantId).data.role == 'ganadero';
+    }
+
+    match /tenants/{tenantId} {
+      allow read: if isActiveMember(tenantId);
+      allow write: if false;
+
+      match /users/{uid} {
+        allow create: if isSelf(uid);
+        allow read, update: if isSelf(uid) && isMember(tenantId);
+        allow delete: if false;
+      }
+
+      match /animales/{animalId} {
+        allow create: if isGanadero(tenantId) &&
+          request.resource.data.creadoPor == request.auth.uid;
+        allow read, update, delete: if isActiveMember(tenantId) &&
+          resource.data.creadoPor == request.auth.uid;
+
+        match /producciones/{produccionId} {
+          allow create: if isGanadero(tenantId) &&
+            request.resource.data.creadoPor == request.auth.uid;
+          allow read, update, delete: if isActiveMember(tenantId) &&
+            resource.data.creadoPor == request.auth.uid;
+        }
+      }
+
+      match /fincas/{fincaId} {
+        allow create: if isGanadero(tenantId) &&
+          request.resource.data.propietario == request.auth.uid;
+        allow read, update, delete: if isActiveMember(tenantId) &&
+          resource.data.propietario == request.auth.uid;
+      }
+
+      match /eventos/{eventoId} {
+        allow create: if isActiveMember(tenantId) &&
+          request.resource.data.creadoPor == request.auth.uid;
+        allow read, update, delete: if isActiveMember(tenantId) &&
+          resource.data.creadoPor == request.auth.uid;
+      }
+
+      match /tareas/{tareaId} {
+        allow create: if isActiveMember(tenantId) &&
+          request.resource.data.creadoPor == request.auth.uid;
+        allow read, update, delete: if isActiveMember(tenantId) &&
+          resource.data.creadoPor == request.auth.uid;
+      }
+
+      match /medicamentos/{medicamentoId} {
+        allow create: if isActiveMember(tenantId) &&
+          request.resource.data.creadoPor == request.auth.uid;
+        allow read, update, delete: if isActiveMember(tenantId) &&
+          resource.data.creadoPor == request.auth.uid;
+      }
+
+      match /support_tickets/{ticketId} {
+        allow create: if isActiveMember(tenantId) &&
+          request.resource.data.creadoPor == request.auth.uid;
+        allow read, update, delete: if isActiveMember(tenantId) &&
+          resource.data.creadoPor == request.auth.uid;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

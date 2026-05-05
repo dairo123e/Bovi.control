@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 // desde esta subcarpeta subimos un nivel a lib/
 import '../home_login.dart';
 import '../menu.dart';
+import '../services/auth_service.dart';
 
 /// Componente que decide si mostrar Login o Menu según la sesión
 class AuthGate extends StatelessWidget {
@@ -20,8 +21,20 @@ class AuthGate extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        // Si hay usuario -> Menu; si no -> Home/login
-        return snap.data != null ? MenuPage() : const HomeScreen();
+        final user = snap.data;
+        if (user == null) return const HomeScreen();
+
+        return FutureBuilder<void>(
+          future: AuthService().ensureRoleNormalizedForCurrentUser(),
+          builder: (context, normalizeSnap) {
+            if (normalizeSnap.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return MenuPage();
+          },
+        );
       },
     );
   }

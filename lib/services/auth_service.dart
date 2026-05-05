@@ -25,18 +25,20 @@ class AuthService {
     required String password,
     required String role,
   }) async {
+    final roleValue = role.trim().toLowerCase();
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email.trim(),
       password: password.trim(),
     );
 
     await cred.user!.updateDisplayName(displayName.trim());
-    await _prov.ensureUserProvisioned(kTenantId, defaultRole: role);
+    await _prov.ensureUserProvisioned(kTenantId, defaultRole: roleValue);
 
     final uid = _auth.currentUser!.uid;
     await _db.doc('tenants/$kTenantId/users/$uid').set({
       'displayName': displayName.trim(),
       'email': email.trim(),
+      'role': roleValue,
       'status': 'active',
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
@@ -52,17 +54,81 @@ class AuthService {
       password: password.trim(),
     );
     await _prov.ensureUserProvisioned(kTenantId);
+    await ensureRoleNormalizedForCurrentUser(setDefaultIfMissing: false);
   }
 
   /// Login con Google + provisión (roleIfNew si es usuario nuevo)
   Future<void> signInWithGoogleAndProvision({required String roleIfNew}) async {
     await signInWithGoogle(); // maneja web / android
-    await _prov.ensureUserProvisioned(kTenantId, defaultRole: roleIfNew);
+    final roleValue = roleIfNew.trim().toLowerCase();
+    await _prov.ensureUserProvisioned(kTenantId, defaultRole: roleValue);
+    await _ensureDefaultRoleIfMissing(fallbackRole: roleValue);
 
     final uid = _auth.currentUser!.uid;
     await _db.doc('tenants/$kTenantId/users/$uid').set({
       'status': 'active',
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
+
+  Future<void> ensureRoleNormalizedForCurrentUser({
+    bool setDefaultIfMissing = true,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final ref = _db.doc('tenants/$kTenantId/users/${user.uid}');
+    final snap = await ref.get();
+    final data = snap.data() ?? const <String, dynamic>{};
+
+    final roleRaw = (data['role'] ?? data['rol'] ?? '').toString();
+    final normalized = roleRaw.trim().toLowerCase();
+
+    final updates = <String, dynamic>{
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (normalized.isEmpty) {
+      if (setDefaultIfMissing) {
+        updates['role'] = 'ganadero';
+        updates['status'] = 'active';
+      }
+    } else {
+      if ((data['role'] ?? '').toString().trim().toLowerCase() != normalized) {
+        updates['role'] = normalized;
+      }
+      if ((data['rol'] ?? '').toString().isNotEmpty) {
+        updates['rol'] = FieldValue.delete();
+      }
+    }
+
+    if (updates.length == 1) return;
+
+    await ref.set(updates, SetOptions(merge: true));
+  }
+
+  Future<void> _ensureDefaultRoleIfMissing({String? fallbackRole}) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final ref = _db.doc('tenants/$kTenantId/users/${user.uid}');
+    final snap = await ref.get();
+    final data = snap.data() ?? const <String, dynamic>{};
+    final role =
+        (data['role'] ?? data['rol'] ?? '').toString().trim().toLowerCase();
+    if (role.isNotEmpty) return;
+
+    final roleValue = (fallbackRole ?? 'ganadero').trim().toLowerCase();
+
+    await ref.set({
+      'role': roleValue,
+      'status': 'active',
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    await ensureRoleNormalizedForCurrentUser(setDefaultIfMissing: true);
   }
 }
